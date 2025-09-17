@@ -1,0 +1,25 @@
+# o Dockerfile é para constuir o container especifico
+# se eu quiser construir o container da api de uma aplicacao
+# o docker compose é para subir um monte de container ao mesmo tempo
+
+# servicos que vou ter, basicamente os container que eu vou subir
+services:
+# nome do servico que vai ser criado
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+    # porta do meu pc : porta do container
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# dizer para o dockercompose quais os volumes que ele vai criar e usar
+# volume é aonde ele vai guardar informacao
+volumes:
+  postgres_data:

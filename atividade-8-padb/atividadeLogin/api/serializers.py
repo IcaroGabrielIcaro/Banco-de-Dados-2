@@ -49,6 +49,8 @@ class ProjetoSerializer(serializers.ModelSerializer):
         read_only_fields = ['usuario']
 
 class TarefaSerializer(serializers.ModelSerializer):
+    projeto = serializers.PrimaryKeyRelatedField(queryset=Projeto.objects.all())
+
     class Meta:
         model = Tarefa
         fields = '__all__'

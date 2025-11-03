@@ -33,7 +33,6 @@ def login(username, password):
     if r.status_code == 200:
         TOKEN = r.json().get('access')
         print("✅ Login bem-sucedido!")
-        print("🔑 Token salvo na sessão.")
         print("🔑 Token salvo:", TOKEN[:30] + "...")
     else:
         print("❌ Erro ao logar:")
@@ -43,7 +42,7 @@ def login(username, password):
 def get_headers():
     global TOKEN
     if not TOKEN:
-        print("Você precisa estar logado.")
+        print("⚠️  Você precisa estar logado para essa operação.")
         sys.exit(1)
     return {'Authorization': f'Bearer {TOKEN}'}
 
@@ -52,87 +51,50 @@ def listar_projetos():
     r = requests.get(BASE_URL + 'projetos/', headers=get_headers())
     if r.status_code == 200:
         projetos = r.json()
-        for p in projetos:
-            print(f"[{p['id']}] {p['nome']} - {p['descricao']}")
-    else:
-        print("Erro:", r.text)
-
-
-def criar_projeto(nome, descricao):
-    data = {'nome': nome, 'descricao': descricao}
-    headers = get_headers()  # 👈 Aqui usamos a função
-    print("DEBUG headers:", headers)  # (opcional) ajuda no debug
-    r = requests.post(BASE_URL + 'projetos/', json=data, headers=headers)
-
-    if r.status_code == 201:
-        print("✅ Projeto criado com sucesso!")
+        if not projetos:
+            print("📭 Nenhum projeto encontrado.")
+        else:
+            print("\n📂 Seus Projetos:")
+            for p in projetos:
+                print(f"  [{p['id']}] {p['nome']} - {p.get('descricao', '')}")
     else:
         print("❌ Erro:", r.status_code, r.text)
 
 
-def atualizar_projeto(id, nome=None, descricao=None):
-    data = {}
-    if nome:
-        data['nome'] = nome
-    if descricao:
-        data['descricao'] = descricao
+def criar_projeto(nome, descricao):
+    data = {'nome': nome, 'descricao': descricao}
+    r = requests.post(BASE_URL + 'projetos/', json=data, headers=get_headers())
 
-    r = requests.put(BASE_URL + f'projetos/{id}/', json=data, headers=get_headers())
-    if r.status_code in (200, 202):
-        print("Projeto atualizado!")
+    if r.status_code == 201:
+        print("✅ Projeto criado com sucesso!")
     else:
-        print("Erro:", r.text)
-
-
-def deletar_projeto(id):
-    r = requests.delete(BASE_URL + f'projetos/{id}/', headers=get_headers())
-    if r.status_code == 204:
-        print("Projeto deletado com sucesso!")
-    else:
-        print("Erro:", r.text)
+        print("❌ Erro ao criar projeto:")
+        print(r.status_code, r.text)
 
 
 def listar_tarefas(projeto_id):
-    r = requests.get(BASE_URL + f'projetos/{projeto_id}/tarefas/', headers=get_headers())
+    r = requests.get(BASE_URL + f'tarefas/?projeto_id={projeto_id}', headers=get_headers())
     if r.status_code == 200:
         tarefas = r.json()
-        for t in tarefas:
-            print(f"[{t['id']}] {t['titulo']} - {'✅' if t['concluida'] else '❌'}")
+        if not tarefas:
+            print("📭 Nenhuma tarefa encontrada para este projeto.")
+        else:
+            print(f"\n📋 Tarefas do projeto {projeto_id}:")
+            for t in tarefas:
+                status = "✅" if t['concluida'] else "❌"
+                print(f"  [{t['id']}] {t['titulo']} - {status}")
     else:
-        print("Erro:", r.text)
+        print("❌ Erro ao listar tarefas:", r.status_code, r.text)
 
 
 def criar_tarefa(projeto_id, titulo, descricao):
     data = {'titulo': titulo, 'descricao': descricao, 'projeto': projeto_id}
     r = requests.post(BASE_URL + 'tarefas/', json=data, headers=get_headers())
     if r.status_code == 201:
-        print("Tarefa criada com sucesso!")
+        print("✅ Tarefa criada com sucesso!")
     else:
-        print("Erro:", r.text)
-
-
-def atualizar_tarefa(id, titulo=None, descricao=None, concluida=None):
-    data = {}
-    if titulo:
-        data['titulo'] = titulo
-    if descricao:
-        data['descricao'] = descricao
-    if concluida is not None:
-        data['concluida'] = concluida
-
-    r = requests.put(BASE_URL + f'tarefas/{id}/', json=data, headers=get_headers())
-    if r.status_code in (200, 202):
-        print("Tarefa atualizada!")
-    else:
-        print("Erro:", r.text)
-
-
-def deletar_tarefa(id):
-    r = requests.delete(BASE_URL + f'tarefas/{id}/', headers=get_headers())
-    if r.status_code == 204:
-        print("Tarefa deletada!")
-    else:
-        print("Erro:", r.text)
+        print("❌ Erro ao criar tarefa:")
+        print(r.status_code, r.text)
 
 
 def menu():
@@ -141,12 +103,8 @@ def menu():
     print("2 - Login")
     print("3 - Listar projetos")
     print("4 - Criar projeto")
-    print("5 - Atualizar projeto")
-    print("6 - Deletar projeto")
-    print("7 - Listar tarefas")
-    print("8 - Criar tarefa")
-    print("9 - Atualizar tarefa")
-    print("10 - Deletar tarefa")
+    print("5 - Listar tarefas")
+    print("6 - Criar tarefa")
     print("0 - Sair")
 
     opcao = input("Escolha: ")
@@ -160,17 +118,9 @@ def menu():
     elif opcao == '4':
         criar_projeto(input("Nome: "), input("Descrição: "))
     elif opcao == '5':
-        atualizar_projeto(input("ID: "), input("Novo nome: "), input("Nova descrição: "))
-    elif opcao == '6':
-        deletar_projeto(input("ID: "))
-    elif opcao == '7':
         listar_tarefas(input("ID do projeto: "))
-    elif opcao == '8':
+    elif opcao == '6':
         criar_tarefa(input("Projeto ID: "), input("Título: "), input("Descrição: "))
-    elif opcao == '9':
-        atualizar_tarefa(input("ID: "), input("Novo título: "), input("Nova descrição: "), input("Concluída? (True/False): ") == "True")
-    elif opcao == '10':
-        deletar_tarefa(input("ID: "))
     elif opcao == '0':
         print("Saindo...")
         sys.exit(0)

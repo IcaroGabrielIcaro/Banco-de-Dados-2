@@ -63,25 +63,44 @@ class CaronaCLI:
 
     def safe_request(self, method, url, **kwargs):
         try:
-            response = self.session.request(method, url, timeout=10, **kwargs)
+            response = self.session.request(method, url, timeout=19, **kwargs)
             return self.handle_response(response)
-        except requests.exceptions.ConnectionError:
-            print("❌ Não foi possível conectar ao servidor Django.")
-            exit(1)
-        except requests.exceptions.Timeout:
-            print("⏱️ Tempo de resposta excedido. Tente novamente.")
-            exit(1)
-        except requests.exceptions.RequestException as e:
-            print(f"Erro inesperado na requisição: {str(e)}")
-            exit(1)
 
-    def registrar(self, username, email, password):
+        except requests.exceptions.HTTPError as http_err:
+            print(f"❌ Erro HTTP {response.status_code}: {response.text}")
+            return response
+
+        except requests.exceptions.ConnectionError:
+            print("❌ Erro de conexão: não foi possível conectar ao servidor.")
+            return None
+
+        except requests.exceptions.Timeout:
+            print("⏳ Tempo de conexão expirou.")
+            return None
+
+        except Exception as err:
+            print(f"⚠️ Erro inesperado: {err}")
+            return None
+    
+    def registrar_usuario_cli(self):
+        print("=== Cadastro de novo usuário ===")
+        username = input("Username: ")
+        email = input("Email: ")
+        password = input("Senha: ")
+        tipo = input("Tipo (MOTORISTA/PASSAGEIRO/AMBOS): ").upper()
+        telefone = input("Telefone: ")
+        biografia = input("Biografia: ")
+
         data = {
             "username": username,
             "email": email,
             "password": password,
             "password2": password,
+            "tipo": tipo,
+            "telefone": telefone,
+            "biografia": biografia
         }
+
         self.safe_request("POST", f"{self.base_url}/cadastro/", json=data)
         print("✅ Usuário registrado com sucesso! Faça login para continuar.")
 
@@ -139,6 +158,46 @@ class CaronaCLI:
             print(f"   Preço: R$ {carona['preco_por_pessoa']}")
             if carona['observacoes']:
                 print(f"   Obs: {carona['observacoes']}")
+
+    def listar_caronas_filtradas(self):
+        print("=== Buscar caronas ===")
+        origem = input("Origem (deixe em branco para ignorar): ")
+        destino = input("Destino (deixe em branco para ignorar): ")
+        preco_min = input("Preço mínimo (deixe em branco para ignorar): ")
+        preco_max = input("Preço máximo (deixe em branco para ignorar): ")
+        data_inicio = input("Data inicial (AAAA-MM-DD, deixe em branco para ignorar): ")
+        data_fim = input("Data final (AAAA-MM-DD, deixe em branco para ignorar): ")
+
+        params = {}
+        if origem:
+            params["origem"] = origem
+        if destino:
+            params["destino"] = destino
+        if preco_min:
+            params["preco_min"] = preco_min
+        if preco_max:
+            params["preco_max"] = preco_max
+        if data_inicio:
+            params["data_inicio"] = data_inicio
+        if data_fim:
+            params["data_fim"] = data_fim
+
+        response = self.safe_request("GET", f"{self.base_url}/caronas/", params=params)
+
+        if not response or response.status_code != 200:
+            print("❌ Falha ao buscar caronas.")
+            if response:
+                print(response.text)
+            return
+
+        caronas = response.json()
+        if not caronas:
+            print("Nenhuma carona encontrada com os filtros fornecidos.")
+            return
+
+        for c in caronas:
+            print(f"🚗 {c['origem']} → {c['destino']} | R$ {c['preco_por_pessoa']} | {c['data_hora_saida']}")
+
     
     def criar_carona(self):
         """Cria uma nova carona"""
@@ -296,13 +355,14 @@ class CaronaCLI:
             print("7. Listar solicitações")
             print("8. Gerenciar solicitação (aceitar/recusar)")
             print("9. Cadastrar veículo")
+            print("10. Buscar caronas com filtros avançados")
             print("0. Sair")
             print("=" * 80)
             
             opcao = input("\nEscolha uma opção: ")
             
             if opcao == "1":
-                self.registrar(input("Username: "), input("Email: "), input("Senha: "))
+                self.registrar_usuario_cli()
             elif opcao == "2":
                 self.login(input("Username: "), input("Senha: "))
             elif opcao == "3":
@@ -319,6 +379,8 @@ class CaronaCLI:
                 self.gerenciar_solicitacao()
             elif opcao == "9":
                 self.criar_veiculo()
+            elif opcao == "10":
+                self.listar_caronas_filtradas()
             elif opcao == "0":
                 print("\n FIM!")
                 break

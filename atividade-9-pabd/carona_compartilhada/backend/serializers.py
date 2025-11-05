@@ -5,24 +5,33 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 class UsuarioRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+    telefone = serializers.CharField(write_only=True, required=False)
+    foto = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    biografia = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    tipo = serializers.ChoiceField(choices=Usuario.TIPO_CHOICES)
 
     class Meta:
         model = Usuario
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'tipo', 'password', 'password2']
+        fields = ['username', 'email', 'password', 'tipo', 'telefone', 'foto', 'biografia']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'email': {'required': True},
+        }
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({'password': 'As senhas não coincidem.'})
-        return attrs
-    
     def create(self, validated_data):
-        password = validated_data.pop('password')
-        validated_data.pop('password2')
-        user = Usuario(**validated_data)
-        user.set_password(password)
-        user.save()
+        telefone = validated_data.pop('telefone', '')
+        foto = validated_data.pop('foto', None)
+        biografia = validated_data.pop('biografia', '')
+        
+        user = Usuario.objects.create_user(**validated_data)
+
+        PerfilUsuario.objects.create(
+            usuario=user,
+            telefone=telefone,
+            foto=foto,
+            biografia=biografia
+        )
+
         return user
 
 

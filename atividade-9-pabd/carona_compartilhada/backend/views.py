@@ -9,6 +9,7 @@ from .serializers import (
     UsuarioSerializer, PerfilUsuarioSerializer, VeiculoSerializer,
     CaronaSerializer, SolicitacaoSerializer, AvaliacaoSerializer, ChatSerializer, UsuarioRegisterSerializer, UsuarioTokenObtainPairSerializer, LogoutSerializer
 )
+from .filters import CaronaFilter
 
 class UsuarioRegisterView(generics.CreateAPIView):
     queryset = Usuario.objects.all()
@@ -65,6 +66,7 @@ class CaronaViewSet(viewsets.ModelViewSet):
     filterset_fields = ['motorista', 'status', 'origem', 'destino']
     search_fields = ['origem', 'destino']
     ordering_fields = ['data_hora_saida', 'preco_por_pessoa']
+    filterset_class = CaronaFilter
     
     @action(detail=False, methods=['get'])
     def disponiveis(self, request):

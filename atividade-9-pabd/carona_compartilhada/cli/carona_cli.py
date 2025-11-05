@@ -4,28 +4,27 @@ from datetime import datetime
 from typing import Optional, Dict, List
 import os
 
-TOKEN_FILE = ".token"
-
 class CaronaCLI:
     """CLI para interagir com a API de Carona Compartilhada"""
     
     def __init__(self, base_url: str = "http://localhost:8000/api"):
         self.base_url = base_url
         self.session = requests.Session()
+        self.token = ".token"
 
     def save_token(self, token: str):
-        with open(TOKEN_FILE, "w") as f:
+        with open(self.token, "w") as f:
             f.write(token)
 
     def load_token(self):
-        if os.path.exists(TOKEN_FILE):
-            with open(TOKEN_FILE, "r") as f:
+        if os.path.exists(self.token):
+            with open(self.token, "r") as f:
                 return f.read().strip()
         return None
 
     def delete_token(self):
-        if os.path.exists(TOKEN_FILE):
-            os.remove(TOKEN_FILE)
+        if os.path.exists(self.token):
+            os.remove(self.token)
 
     def auth_headers(self):
         token = self.load_token()
@@ -63,7 +62,7 @@ class CaronaCLI:
 
     def safe_request(self, method, url, **kwargs):
         try:
-            response = self.session.request(method, url, timeout=19, **kwargs)
+            response = requests.request(method, url, timeout=10, **kwargs)
             return self.handle_response(response)
 
         except requests.exceptions.HTTPError as http_err:
@@ -330,12 +329,14 @@ class CaronaCLI:
                 "ativo": True
             }
             
-            resultado = self._make_request("POST", "veiculos/", data)
+            # resultado = self._make_request("POST", "veiculos/", data)
+            projeto = self.safe_request("POST", f"{self.base_url}/veiculos/", json=data, headers=self.auth_headers())
+            print("Deu certo!")
             
-            if resultado:
-                print(f"\nVeículo cadastrado com sucesso! ID: {resultado.get('id')}")
-            else:
-                print("\n Erro ao cadastrar veículo.")
+            # if resultado:
+            #     print(f"\nVeículo cadastrado com sucesso! ID: {resultado.get('id')}")
+            # else:
+            #     print("\n Erro ao cadastrar veículo.")
                 
         except ValueError:
             print(" Erro: Valores inválidos inseridos.")

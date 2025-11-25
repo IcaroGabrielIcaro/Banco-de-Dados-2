@@ -1,0 +1,42 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center mb-6">Cadastro de Usuário</h2>
+
+    <form [formGroup]="usuarioForm" (ngSubmit)="registrar()" class="space-y-4">
+
+      <input formControlName="username" placeholder="Username"
+        class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+      <input formControlName="email" placeholder="Email"
+        class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+      <input formControlName="cpf" placeholder="CPF"
+        class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+      <input formControlName="telefone" placeholder="Telefone"
+        class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+      <select formControlName="tipo_perfil"
+        class="w-full p-3 border rounded-lg bg-white focus:ring focus:ring-blue-300">
+        <option value="" disabled selected>Selecione o perfil</option>
+        <option value="gerente">Gerente</option>
+        <option value="mecanico">Mecânico</option>
+        <option value="cliente">Cliente</option>
+      </select>
+
+      <input formControlName="password" type="password" placeholder="Senha"
+        class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" />
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition">
+        Cadastrar
+      </button>
+
+    </form>
+
+    <p class="text-center mt-4 text-sm">
+      Já tem conta?
+      <a routerLink="/login" class="text-blue-600 hover:underline">Entrar</a>
+    </p>
+  </div>
+</div>

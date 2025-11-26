@@ -1,0 +1,67 @@
+{
+  "usuarios_para_registro": [
+    {
+      "username": "maria",
+      "email": "maria@example.com",
+      "password": "senha123",
+      "password_confirm": "senha123",
+      "first_name": "Maria",
+      "last_name": "Santos",
+      "tipo_perfil": "instrutor",
+      "telefone": "84988887777",
+      "cpf": "11111111111"
+    },
+    {
+      "username": "joao",
+      "email": "joao@example.com",
+      "password": "senha123",
+      "password_confirm": "senha123",
+      "first_name": "João",
+      "last_name": "Silva",
+      "tipo_perfil": "aluno",
+      "telefone": "84999998888",
+      "cpf": "22222222222"
+    },
+    {
+      "username": "ana",
+      "email": "ana@example.com",
+      "password": "senha123",
+      "password_confirm": "senha123",
+      "first_name": "Ana",
+      "last_name": "Costa",
+      "tipo_perfil": "instrutor",
+      "telefone": "84966665555",
+      "cpf": "33333333333"
+    }
+  ],
+  "endpoints": {
+    "registro": {
+      "url": "http://localhost:8000/api/registro/",
+      "method": "POST"
+    },
+    "login": {
+      "url": "http://localhost:8000/api/login/",
+      "method": "POST"
+    },
+    "usuario_atual": {
+      "url": "http://localhost:8000/api/usuario/",
+      "method": "GET"
+    }
+  },
+  "exemplos": {
+    "curso": {
+      "nome": "Curso Automático Exemplo",
+      "descricao": "Exemplo criado pelo CLI"
+    },
+    "modulo": {
+      "titulo": "Modulo Automático Exemplo",
+      "ordem": 1
+    },
+    "aula": {
+      "titulo": "Aula Automática Exemplo",
+      "conteudo": "Conteúdo de exemplo",
+      "duracao": 20,
+      "ordem": 1
+    }
+  }
+}
